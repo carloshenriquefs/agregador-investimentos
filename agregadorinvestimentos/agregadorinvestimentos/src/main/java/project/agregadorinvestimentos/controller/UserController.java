@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.agregadorinvestimentos.dto.CreateUserDto;
+import project.agregadorinvestimentos.dto.UpdateUserDto;
 import project.agregadorinvestimentos.entity.User;
 import project.agregadorinvestimentos.service.UserService;
 
@@ -34,6 +35,12 @@ public class UserController {
     public ResponseEntity<List<User>> listUsers() {
         var users = userService.listUsers();
         return ResponseEntity.ok(users);
+    }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<Void> updateUserById(@PathVariable("userId") String userId, @RequestBody UpdateUserDto updateUserDto) {
+        userService.updateUserById(userId, updateUserDto);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{userId}")
