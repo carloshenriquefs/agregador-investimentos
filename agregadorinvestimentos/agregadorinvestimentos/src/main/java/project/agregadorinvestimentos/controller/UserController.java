@@ -24,6 +24,8 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public ResponseEntity<User> getUserId(@PathVariable("userId") String userId) {
-        return null;
+        var user = userService.getUserById(userId);
+
+        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
