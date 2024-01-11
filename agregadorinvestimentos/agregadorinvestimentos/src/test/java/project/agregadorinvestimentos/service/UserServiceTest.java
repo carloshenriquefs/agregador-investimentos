@@ -14,6 +14,7 @@ import project.agregadorinvestimentos.entity.User;
 import project.agregadorinvestimentos.repository.UserRepository;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +33,9 @@ class UserServiceTest {
 
     @Captor
     private ArgumentCaptor<User> userArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<UUID> uuidArgumentCaptor;
 
     @Nested
     class createUser {
@@ -81,8 +85,69 @@ class UserServiceTest {
                     "123456"
             );
 
-            // Act & Act
+            // Act & Assert
             assertThrows(RuntimeException.class, () -> userService.createUser(input));
+        }
+    }
+
+    @Nested
+    class getUserById {
+
+        @Test
+        @DisplayName("Should get user by id with success when optional is present")
+        void shouldGetUserByIdWithSuccessWhenOptionalIsPresent() {
+            //Arrange
+            var user = new User(
+                    UUID.randomUUID(),
+                    "username",
+                    "email@email.com",
+                    "password",
+                    Instant.now(),
+                    null
+            );
+
+            doReturn(Optional.of(user)).when(userRepository).findById(uuidArgumentCaptor.capture());
+
+            //Act
+            var output = userService.getUserById(user.getUserId().toString());
+
+            //Assert
+            assertTrue(output.isPresent());
+            assertEquals(user.getUserId(), uuidArgumentCaptor.getValue());
+        }
+
+        @Test
+        @DisplayName("Should get user by id with success when optional is empty")
+        void shouldGetUserByIdWithSuccessWhenOptionalIsEmpty() {
+            //Arrange
+            var userId = UUID.randomUUID();
+
+            doReturn(Optional.empty()).when(userRepository).findById(uuidArgumentCaptor.capture());
+
+            //Act
+            var output = userService.getUserById(userId.toString());
+
+            //Assert
+            assertTrue(output.isEmpty());
+            assertEquals(userId, uuidArgumentCaptor.getValue());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when error occurs")
+        void shouldThrowExceptionWhenErrorOccurs() {
+            // Arrange
+            doThrow(RuntimeException.class).when(userRepository).findById(any());
+            var user = new User(
+                    UUID.randomUUID(),
+                    "username",
+                    "email@email.com",
+                    "password",
+                    Instant.now(),
+                    null
+            );
+
+            // Act & Assert
+            assertThrows(RuntimeException.class, () -> userService.getUserById(user.getUserId().toString()));
         }
     }
 
