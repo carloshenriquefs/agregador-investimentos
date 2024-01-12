@@ -15,6 +15,7 @@ import project.agregadorinvestimentos.entity.User;
 import project.agregadorinvestimentos.repository.UserRepository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,16 +45,9 @@ class UserServiceTest {
         @DisplayName("Should create a user with success")
         void shouldCreatedAUserWithSuccess() {
             // Arrange
-            var entity = new User(
-                    UUID.randomUUID(),
-                    "username",
-                    "email@email.com",
-                    "123456",
-                    Instant.now(),
-                    null
-            );
+            var user = userEntity();
 
-            doReturn(entity).when(userRepository).save(userArgumentCaptor.capture());
+            doReturn(user).when(userRepository).save(userArgumentCaptor.capture());
 
             var input = new CreateUserDto(
                     "username",
@@ -79,11 +73,7 @@ class UserServiceTest {
         void shouldThrowExceptionWhenErrorOccurs() {
             // Arrange
             doThrow(RuntimeException.class).when(userRepository).save(any());
-            var input = new CreateUserDto(
-                    "username",
-                    "email@email.com",
-                    "123456"
-            );
+            var input = createUserDto();
 
             // Act & Assert
             assertThrows(RuntimeException.class, () -> userService.createUser(input));
@@ -97,14 +87,7 @@ class UserServiceTest {
         @DisplayName("Should get user by id with success when optional is present")
         void shouldGetUserByIdWithSuccessWhenOptionalIsPresent() {
             //Arrange
-            var user = new User(
-                    UUID.randomUUID(),
-                    "username",
-                    "email@email.com",
-                    "password",
-                    Instant.now(),
-                    null
-            );
+            var user = userEntity();
 
             doReturn(Optional.of(user)).when(userRepository).findById(uuidArgumentCaptor.capture());
 
@@ -137,17 +120,41 @@ class UserServiceTest {
         void shouldThrowExceptionWhenErrorOccurs() {
             // Arrange
             doThrow(RuntimeException.class).when(userRepository).findById(any());
-            var user = new User(
-                    UUID.randomUUID(),
-                    "username",
-                    "email@email.com",
-                    "password",
-                    Instant.now(),
-                    null
-            );
+            var user = userEntity();
 
             // Act & Assert
             assertThrows(RuntimeException.class, () -> userService.getUserById(user.getUserId().toString()));
+        }
+    }
+
+    @Nested
+    class listUsers {
+
+        @Test
+        @DisplayName("Should return all users with success")
+        void shouldReturnAllUsersWithSuccess() {
+            // Arrange
+            var user = userEntity();
+
+            // Act
+            var userList = List.of(user);
+            doReturn(userList).when(userRepository).findAll();
+
+            var output = userService.listUsers();
+
+            // Assert
+            assertNotNull(output);
+            assertEquals(userList.size(), output.size());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when error occurs")
+        void shouldThrowExceptionWhenErrorOccurs() {
+            // Arrange
+            doThrow(RuntimeException.class).when(userRepository).findAll();
+
+            // Act & Assert
+            assertThrows(RuntimeException.class, () -> userService.listUsers());
         }
     }
 
@@ -158,19 +165,9 @@ class UserServiceTest {
         @DisplayName("Should update user by id when user exists and username and password is filled")
         void shouldUpdateUserByIdWhenUserExistsAndUsernameAndPasswordIsFilled() {
             //Arrange
-            var user = new User(
-                    UUID.randomUUID(),
-                    "username",
-                    "email@email.com",
-                    "password",
-                    Instant.now(),
-                    null
-            );
+            var user = userEntity();
 
-            var updateUserDto = new UpdateUserDto(
-                    "newusername",
-                    "newpassword"
-            );
+            var updateUserDto = updateUserDto();
 
             doReturn(Optional.of(user)).when(userRepository).findById(uuidArgumentCaptor.capture());
 
@@ -195,10 +192,7 @@ class UserServiceTest {
         @DisplayName("Should not update user when user not exists")
         void shouldNotUpdateUserWhenUserNotExists() {
             // Arrange
-            var updateUserDto = new UpdateUserDto(
-                    "newusername",
-                    "newpassword"
-            );
+            var updateUserDto = updateUserDto();
 
             var userId = UUID.randomUUID();
 
@@ -222,10 +216,7 @@ class UserServiceTest {
 
             var userId = UUID.randomUUID();
 
-            var updateUserDto = new UpdateUserDto(
-                    "username",
-                    "password"
-            );
+            var updateUserDto = updateUserDto();
 
             // Act & Assert
             assertThrows(RuntimeException.class, () -> userService.updateUserById(userId.toString(), updateUserDto));
@@ -274,5 +265,31 @@ class UserServiceTest {
             verify(userRepository, times(1)).existsById(uuidArgumentCaptor.getValue());
             verify(userRepository, times(0)).deleteById(any());
         }
+    }
+
+    private User userEntity() {
+        return new User(
+                UUID.randomUUID(),
+                "username",
+                "email@email.com",
+                "password",
+                Instant.now(),
+                null
+        );
+    }
+
+    private UpdateUserDto updateUserDto() {
+        return new UpdateUserDto(
+                "newusername",
+                "newpassword"
+        );
+    }
+
+    private CreateUserDto createUserDto() {
+        return new CreateUserDto(
+                "username",
+                "email@email.com",
+                "123456"
+        );
     }
 }
