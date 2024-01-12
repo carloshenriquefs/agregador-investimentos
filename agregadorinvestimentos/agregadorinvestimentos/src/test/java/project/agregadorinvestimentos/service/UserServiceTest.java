@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import project.agregadorinvestimentos.dto.CreateUserDto;
+import project.agregadorinvestimentos.dto.UpdateUserDto;
 import project.agregadorinvestimentos.entity.User;
 import project.agregadorinvestimentos.repository.UserRepository;
 
@@ -151,12 +152,92 @@ class UserServiceTest {
     }
 
     @Nested
+    class updateUserById {
+
+        @Test
+        @DisplayName("Should update user by id when user exists and username and password is filled")
+        void shouldUpdateUserByIdWhenUserExistsAndUsernameAndPasswordIsFilled() {
+            //Arrange
+            var user = new User(
+                    UUID.randomUUID(),
+                    "username",
+                    "email@email.com",
+                    "password",
+                    Instant.now(),
+                    null
+            );
+
+            var updateUserDto = new UpdateUserDto(
+                    "newusername",
+                    "newpassword"
+            );
+
+            doReturn(Optional.of(user)).when(userRepository).findById(uuidArgumentCaptor.capture());
+
+            doReturn(user).when(userRepository).save(userArgumentCaptor.capture());
+
+            // Act
+            userService.updateUserById(user.getUserId().toString(), updateUserDto);
+
+            // Assert
+            assertEquals(user.getUserId(), uuidArgumentCaptor.getValue());
+
+            var userCapture = userArgumentCaptor.getValue();
+
+            assertEquals(updateUserDto.username(), userCapture.getUsername());
+            assertEquals(updateUserDto.password(), userCapture.getPassword());
+
+            verify(userRepository, times(1)).findById(uuidArgumentCaptor.getValue());
+            verify(userRepository, times(1)).save(user);
+        }
+
+        @Test
+        @DisplayName("Should not update user when user not exists")
+        void shouldNotUpdateUserWhenUserNotExists() {
+            // Arrange
+            var updateUserDto = new UpdateUserDto(
+                    "newusername",
+                    "newpassword"
+            );
+
+            var userId = UUID.randomUUID();
+
+            doReturn(Optional.empty()).when(userRepository).findById(uuidArgumentCaptor.capture());
+
+            // Act
+            userService.updateUserById(userId.toString(), updateUserDto);
+
+            // Assert
+            assertEquals(userId, uuidArgumentCaptor.getValue());
+
+            verify(userRepository, times(1)).findById(uuidArgumentCaptor.getValue());
+            verify(userRepository, times(0)).save(any());
+        }
+
+        @Test
+        @DisplayName("Should throw exception when error occurs")
+        void shouldThrowExceptionWhenErrorOccurs() {
+            // Arrange
+            doThrow(RuntimeException.class).when(userRepository).findById(any());
+
+            var userId = UUID.randomUUID();
+
+            var updateUserDto = new UpdateUserDto(
+                    "username",
+                    "password"
+            );
+
+            // Act & Assert
+            assertThrows(RuntimeException.class, () -> userService.updateUserById(userId.toString(), updateUserDto));
+        }
+    }
+
+    @Nested
     class deleteById {
 
         @Test
         @DisplayName("Should delete user with success when user exists")
         void shouldDeleteUserWithSuccessWhenUserExists() {
-
             // Arrange
             doReturn(true).when(userRepository).existsById(uuidArgumentCaptor.capture());
 
