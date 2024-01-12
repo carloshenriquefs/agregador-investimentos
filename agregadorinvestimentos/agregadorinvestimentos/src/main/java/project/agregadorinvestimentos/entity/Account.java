@@ -20,6 +20,10 @@ public class Account {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @OneToOne(mappedBy = "account")
+    @PrimaryKeyJoinColumn
+    private BillingAddress billingAddress;
+
     public Account() {
     }
 
