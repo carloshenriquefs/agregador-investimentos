@@ -3,6 +3,7 @@ package project.agregadorinvestimentos.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import project.agregadorinvestimentos.dto.AccountResponseDto;
 import project.agregadorinvestimentos.dto.CreateAccountDto;
 import project.agregadorinvestimentos.dto.CreateUserDto;
 import project.agregadorinvestimentos.dto.UpdateUserDto;
@@ -51,8 +52,14 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/accounts")
-    public ResponseEntity<Void> deleteById(@PathVariable("userId") String userId, @RequestBody CreateAccountDto createAccountDto) {
+    public ResponseEntity<Void> createAccount(@PathVariable("userId") String userId, @RequestBody CreateAccountDto createAccountDto) {
         userService.createAccount(userId, createAccountDto);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{userId}/accounts")
+    public ResponseEntity<List<AccountResponseDto>> listAccounts(@PathVariable("userId") String userId) {
+        var accounts = userService.listAccounts(userId);
+        return ResponseEntity.ok(accounts);
     }
 }
