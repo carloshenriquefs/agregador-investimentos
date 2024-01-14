@@ -6,5 +6,5 @@ import project.agregadorinvestimentos.entity.AccountStockId;
 import project.agregadorinvestimentos.entity.Stock;
 
 @Repository
-public interface StockRepository extends JpaRepository<Stock, AccountStockId> {
+public interface StockRepository extends JpaRepository<Stock, String> {
 }
