@@ -3,6 +3,7 @@ package project.agregadorinvestimentos.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import project.agregadorinvestimentos.dto.CreateAccountDto;
 import project.agregadorinvestimentos.dto.CreateUserDto;
 import project.agregadorinvestimentos.dto.UpdateUserDto;
 import project.agregadorinvestimentos.entity.User;
@@ -47,5 +48,11 @@ public class UserController {
     public ResponseEntity<Void> deleteById(@PathVariable("userId") String userId) {
         userService.deleteById(userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{userId}/accounts")
+    public ResponseEntity<Void> deleteById(@PathVariable("userId") String userId, @RequestBody CreateAccountDto createAccountDto) {
+        userService.createAccount(userId, createAccountDto);
+        return ResponseEntity.ok().build();
     }
 }
