@@ -23,7 +23,7 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}/stocks")
-    public ResponseEntity<List<AccountStockResponseDto>> associateStock(@PathVariable("accountId") String accountId) {
+    public ResponseEntity<List<AccountStockResponseDto>> listStocks(@PathVariable("accountId") String accountId) {
         var stocks = accountService.listStocks(accountId);
         return ResponseEntity.ok(stocks);
     }
